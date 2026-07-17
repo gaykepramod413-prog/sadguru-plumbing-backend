@@ -1,0 +1,5 @@
+Flask==3.0.3
+Flask-Cors==5.0.0
+mysql-connector-python==9.0.0
+reportlab==4.2.2
+gunicorn==22.0.0
