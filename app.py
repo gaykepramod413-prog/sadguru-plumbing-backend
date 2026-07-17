@@ -17,11 +17,11 @@ from reportlab.lib.colors import HexColor, white, black
 # ======================================================================
 
 DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "localhost"),
-    "port": int(os.environ.get("DB_PORT", 3306)),
+    "host": os.environ.get("DB_HOST", "tokaido.proxy.rlwy.net"),
+    "port": int(os.environ.get("DB_PORT", 12746)),
     "user": os.environ.get("DB_USER", "root"),
-    "password": os.environ.get("DB_PASSWORD", "1234"),
-    "database": os.environ.get("DB_NAME", "sadguru_plumbing")
+    "password": os.environ.get("DB_PASSWORD", "GpXYHjyFQuNYDEepvzUprisUpjTDTlbH"),
+    "database": os.environ.get("DB_NAME", "railway")
 }
 
 
