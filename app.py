@@ -16,13 +16,21 @@ from reportlab.lib.colors import HexColor, white, black
 # DATABASE CONFIG (Render Compatible)
 # ======================================================================
 
-DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "tokaido.proxy.rlwy.net"),
-    "port": int(os.environ.get("DB_PORT", 12746)),
-    "user": os.environ.get("DB_USER", "root"),
-    "password": os.environ.get("DB_PASSWORD", "GpXYHjyFQuNYDEepvzUprisUpjTDTlbH"),
-    "database": os.environ.get("DB_NAME", "railway")
-}
+def get_connection():
+    required = ["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"]
+    missing = [key for key in required if not os.environ.get(key)]
+    if missing:
+        raise RuntimeError(
+            "Missing required database environment variables: " + ", ".join(missing)
+        )
+
+    return mysql.connector.connect(
+        host=os.environ["DB_HOST"],
+        port=int(os.environ["DB_PORT"]),
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        database=os.environ["DB_NAME"]
+    )
 
 
 def get_connection():
@@ -582,6 +590,6 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=PORT,
-        debug=True
+        debug=False
     )
     
