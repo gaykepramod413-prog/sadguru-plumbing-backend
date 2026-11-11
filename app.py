@@ -33,16 +33,6 @@ def get_connection():
     )
 
 
-def get_connection():
-    return mysql.connector.connect(
-        host=DB_CONFIG["host"],
-        port=DB_CONFIG["port"],
-        user=DB_CONFIG["user"],
-        password=DB_CONFIG["password"],
-        database=DB_CONFIG["database"]
-    )
-
-
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
@@ -576,8 +566,8 @@ if __name__ == "__main__":
         print("=" * 60)
         print(" Sadguru Plumbing Backend Started ")
         print("=" * 60)
-        print("Database :", DB_CONFIG["database"])
-        print("Host     :", DB_CONFIG["host"])
+        print("Database :", os.environ.get("DB_NAME", "not configured"))
+        print("Host     :", os.environ.get("DB_HOST", "not configured"))
         print("=" * 60)
 
     except Error as e:
