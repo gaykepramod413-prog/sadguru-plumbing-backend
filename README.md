@@ -1,38 +1,58 @@
-# 🔧 Sadguru Plumbing — Backend
+# 🔧 Sadguru Plumbing Backend
 
 <div align="center">
 
-**A Flask and MySQL backend for managing plumbing materials and generating material requirement PDFs.**
+**A Flask and MySQL REST backend for plumbing-material management and PDF requirement lists.**
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-000000?style=flat-square&logo=flask&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![PDF](https://img.shields.io/badge/PDF-ReportLab-B30B00?style=flat-square)
+![ReportLab](https://img.shields.io/badge/PDF-ReportLab-B30B00?style=flat-square)
 
 </div>
 
-## 📌 Overview
+## Overview
 
-Sadguru Plumbing Backend provides REST endpoints for a plumbing materials workflow. It stores material names, categories, available sizes, and units in MySQL, and creates a downloadable PDF list for a selected job.
+Sadguru Plumbing Backend provides REST endpoints for a plumbing-material workflow. It stores material names, categories, available sizes and units in MySQL, and generates a downloadable PDF requirement list for a selected customer and site.
 
-## ✨ Features
+## Features
 
-- Retrieve all materials, ordered by category and name.
-- Retrieve the available material categories.
-- Add a material with its category, sizes, and unit.
-- Delete a material by its ID.
+- Retrieve materials ordered by category and name.
+- Retrieve distinct material categories.
+- Add and delete material records.
 - Generate an A4 PDF material requirement list.
-- Include customer and site details in the generated PDF.
-- Configure the database using environment variables.
+- Include customer and site details in the generated document.
+- Configure database connection settings through environment variables.
 
-## 🧰 Tech Stack
+## Tech Stack
 
-- **Backend:** Python, Flask, Flask-CORS
+- **Language:** Python
+- **Backend:** Flask, Flask-CORS
 - **Database:** MySQL
 - **PDF generation:** ReportLab
-- **Deployment support:** Gunicorn-compatible Flask application
+- **Deployment:** Gunicorn-compatible Flask application
 
-## 📁 Project Structure
+## Request Flow
+
+```text
+Client / Frontend
+      |
+      v
+Flask REST API
+      |
+      +---- GET /api/materials --------> MySQL SELECT
+      |
+      +---- POST /api/materials -------> MySQL INSERT
+      |
+      +---- DELETE /api/materials/id --> MySQL DELETE
+      |
+      +---- POST /api/pdf/generate ----> ReportLab PDF
+                                           |
+                                           v
+                                      PDF download
+```
+
+## Project Structure
 
 ```text
 sadguru-plumbing-backend/
@@ -43,7 +63,7 @@ sadguru-plumbing-backend/
 └── README.md
 ```
 
-## ⚙️ Local Setup
+## Local Setup
 
 1. Clone the repository:
 
@@ -56,8 +76,8 @@ sadguru-plumbing-backend/
 
    ```bash
    python -m venv .venv
-   # Windows
-   .venv\Scripts\activate
+   # Windows PowerShell
+   .venv\Scripts\Activate.ps1
    # macOS / Linux
    source .venv/bin/activate
    ```
@@ -68,7 +88,7 @@ sadguru-plumbing-backend/
    pip install -r requirements.txt
    ```
 
-4. Configure your MySQL connection using environment variables.
+4. Configure database environment variables.
 
    **Windows PowerShell**
    ```powershell
@@ -94,18 +114,18 @@ sadguru-plumbing-backend/
    python app.py
    ```
 
-   The application runs on port `3000` by default (or the platform-provided `PORT`). On direct startup, it creates the `materials` table if it does not already exist.
+The default port is `3000`, or the platform-provided `PORT`. Direct startup attempts to initialize the materials table.
 
-## 🔌 API Endpoints
+## API Reference
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/` | Backend status |
 | GET | `/api/materials` | List materials |
-| GET | `/api/materials/categories` | List material categories |
+| GET | `/api/materials/categories` | List categories |
 | POST | `/api/materials` | Add a material |
 | DELETE | `/api/materials/{id}` | Delete a material |
-| POST | `/api/pdf/generate` | Generate a PDF material list |
+| POST | `/api/pdf/generate` | Generate a PDF list |
 
 ### Add a material
 
@@ -120,7 +140,7 @@ sadguru-plumbing-backend/
 }
 ```
 
-### Generate a material list
+### Generate a PDF
 
 `POST /api/pdf/generate`
 
@@ -139,33 +159,45 @@ sadguru-plumbing-backend/
 }
 ```
 
-The response is a downloadable PDF file named `material-list.pdf`.
+The response is an A4 PDF attachment named `material-list.pdf`.
 
-## 🗄️ Database
+## Database
 
-The backend creates the following table on direct application startup:
+The application creates a `materials` table with:
 
-| Column | Type | Description |
+| Column | Type | Purpose |
 |---|---|---|
-| id | INT, primary key | Auto-increment ID |
+| id | INT, primary key | Auto-increment identifier |
 | name | VARCHAR(150) | Material name |
 | category | VARCHAR(100) | Material category |
 | sizes | VARCHAR(255) | Comma-separated sizes |
 | unit | VARCHAR(30) | Measurement unit |
 
-## 🔐 Security Notes
+## Security & Production Notes
 
-- Store database credentials only in environment variables or your hosting provider's secret settings.
-- Do not commit passwords, API keys, or production connection strings.
-- Rotate any credential that has previously been committed to a public repository.
-- Use production-safe settings when deploying.
+- Database credentials are read from environment variables.
+- SQL statements use parameterized values for material insertion and deletion.
+- **Current limitation:** the listed management endpoints do not implement user authentication or role-based authorization.
+- Add authentication, authorization, input validation, pagination and rate limiting before exposing management operations publicly.
+- Avoid returning raw database exception details to public clients; log sanitized diagnostics server-side.
+- Use HTTPS and hosting-provider secret storage in production.
+- Never commit passwords or production connection strings.
 
-## 🗺️ Possible Improvements
+## Roadmap
 
-- Add update-material and search endpoints.
-- Add input validation and authentication for management operations.
-- Add automated API and database tests.
-- Add pagination for larger material lists.
+- Add update and search material endpoints.
+- Add administrator authentication and authorization.
+- Add API/database automated tests.
+- Add pagination and robust validation.
+- Improve PDF handling for long names and multi-page lists.
+
+## Interview Notes
+
+**Why use MySQL?** The material records have structured fields and relationships that fit a relational database.
+
+**Why use parameterized SQL?** It separates SQL commands from supplied values and helps prevent SQL injection.
+
+**How is the PDF generated?** The API receives customer/site details and selected items, ReportLab draws the A4 document into an in-memory buffer, and Flask sends it as a downloadable attachment.
 
 ---
 
